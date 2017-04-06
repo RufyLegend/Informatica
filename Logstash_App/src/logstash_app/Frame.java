@@ -18,6 +18,7 @@ import java.awt.event.ActionListener;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 
 import javax.swing.JTextField;
 import java.awt.Component;
@@ -119,11 +120,11 @@ public class Frame extends JFrame implements ActionListener {
 		PathTextField.setColumns(10);
 		
 		JLabel lblUsername = new JLabel("Username");
-		lblUsername.setBounds(5, 259, 71, 14);
+		lblUsername.setBounds(10, 259, 71, 14);
 		contentPane.add(lblUsername);
 		
 		JLabel lblPassword = new JLabel("Password");
-		lblPassword.setBounds(5, 284, 71, 14);
+		lblPassword.setBounds(10, 284, 71, 14);
 		contentPane.add(lblPassword);
 		
 		userNameTextField = new JTextField();
@@ -137,7 +138,7 @@ public class Frame extends JFrame implements ActionListener {
 		passwordTextField.setColumns(10);
 		
 		JLabel lblSeparatore = new JLabel("Separatore");
-		lblSeparatore.setBounds(439, 114, 60, 14);
+		lblSeparatore.setBounds(439, 114, 71, 14);
 		contentPane.add(lblSeparatore);
 		
 		separatoreTextField = new JTextField();
@@ -145,13 +146,14 @@ public class Frame extends JFrame implements ActionListener {
 		contentPane.add(separatoreTextField);
 		separatoreTextField.setColumns(10);
 		
-		btnCarica = new JButton("Carica");
-		btnCarica.setBounds(480, 250, 89, 23);
+		btnCarica = new JButton("Genera Configurazione");
+		btnCarica.setBounds(365, 222, 155, 33);
 		btnCarica.addActionListener(this);
 		contentPane.add(btnCarica);
 		
 		btnTest = new JButton("Test");
-		btnTest.setBounds(480, 291, 89, 23);
+		btnTest.setBounds(365, 275, 155, 33);
+		btnTest.addActionListener(this);
 		contentPane.add(btnTest);
 	}
 
@@ -160,14 +162,19 @@ public class Frame extends JFrame implements ActionListener {
 	 */
 	@Override
 	public void actionPerformed(ActionEvent e) {
+		//Quando viene premuto il bottone Crea Configurazione
 		if(e.getSource().equals(btnCarica)){
-			System.out.println("Prende!");
-			//scriviInput();
+			scriviInput();
 			scriviFilter();
-			//scriviOutput();
-			
+			scriviOutput();
+		}
+		
+		//Quando viene premuto il bottone Test
+		if(e.getSource().equals(btnTest)){
+			testConfig();
 		}
 	}
+	
 	
 	/**
 	 * Scrive la sezione dell'input nel file di configurazione di logstash
@@ -177,7 +184,7 @@ public class Frame extends JFrame implements ActionListener {
 			fw = new FileWriter(fileName);
 			bw = new BufferedWriter(fw);
 			bw.write("input{\nfile{\npath => " + '"'+PathTextField.getText()+'"'+"\nstart_position => beginning\n}\n}");
-			System.out.println("Scrittura Eseguita!");
+			System.out.println("Scrittura Input Eseguita!");
 			bw.close();
 			fw.close();
 		} catch (IOException e) {
@@ -189,21 +196,26 @@ public class Frame extends JFrame implements ActionListener {
 	 * Srive la sezione filter nel file di configurazione di logstash
 	 */
 	public void scriviFilter(){
+		
 		try {
 			fw = new FileWriter(fileName, true);//Append mode
 			bw = new BufferedWriter(fw);
-			String[] fields = splitColumns();
+			ArrayList<String> campi  = splitColumns();
+			String app = '"' + campi.get(0) + '"';
+			campi.remove(0);
+			int j = 0;
 			
-			String app = "";
-			int i = 0;
-			for(String item : fields){
-				app = app.concat('"' + fields[i] + '"' + ',');
-				i++;
+			//Crea la string con tutti i campi formattata per essere scritta come "campo1","campo2", ecc
+			for(String element : campi){
+				app = app + ',' + '"' + campi.get(j) + '"';
 				System.out.println(app);
+				j++;
+				
 			}
 			
-			bw.append("\nfilter{\ncsv{\ncolumns => [" + app);
-			System.out.println("Scrittura Eseguita!");
+			String output = "\nfilter{\ncsv{\ncolumns => [" + app + "]\n separator => "+'"'+separatoreTextField.getText()+'"'+"\n}\n}";
+			bw.append(output);
+			System.out.println("Scrittura Filter Eseguita!");
 			bw.close();
 			fw.close();
 		} catch (IOException e) {
@@ -217,6 +229,7 @@ public class Frame extends JFrame implements ActionListener {
 	 * Scrive la sezione output nel file di configurazione di logstash
 	 */
 	public void scriviOutput(){
+		
 		try {
 			fw = new FileWriter(fileName, true);//Append mode
 			bw = new BufferedWriter(fw);
@@ -225,7 +238,7 @@ public class Frame extends JFrame implements ActionListener {
 					"\npassword => " + '"'+passwordTextField.getText()+'"' + "\n} stdout{}\n}";
 			
 			bw.append(output);
-			System.out.println("Scrittura Eseguita!");
+			System.out.println("Scrittura Output Eseguita!");
 			bw.close();
 			fw.close();
 		} catch (IOException e) {
@@ -233,9 +246,30 @@ public class Frame extends JFrame implements ActionListener {
 		}
 	}
 	
-	public String[] splitColumns(){
-		String[] columns = campiTextField.getText().split(",");
-		return columns;
+	/**
+	 * Divide i campi inseriti nel JTextField campi
+	 * @return comulms 
+	 */
+	public ArrayList<String> splitColumns(){
+		
+		String[] columns = campiTextField.getText().split("\\,");
+		ArrayList<String> campiString = new ArrayList();
+		int i = 0;
+		for(String item : columns){
+			campiString.add(columns[i]);
+			i++;
+		}
+		return campiString;
+	}
+	
+	public void testConfig(){
+		Runtime rt = Runtime.getRuntime();
+		try {
+			rt.exec("cmd.exe /c start");
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
 	}
 	
 	
