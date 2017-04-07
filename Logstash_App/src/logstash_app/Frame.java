@@ -10,6 +10,7 @@ import javax.swing.JToolBar;
 import javax.swing.JMenuBar;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 import java.awt.Font;
@@ -41,7 +42,7 @@ public class Frame extends JFrame implements ActionListener {
 	private JPanel contentPane;
 	private JTextField campiTextField;
 	private JTextField hostTextField;
-	private JTextField PathTextField;
+	private JTextField pathTextField;
 	private JTextField userNameTextField;
 	private JTextField passwordTextField;
 	private JTextField separatoreTextField;
@@ -114,10 +115,10 @@ public class Frame extends JFrame implements ActionListener {
 		lblPath.setBounds(10, 80, 46, 14);
 		contentPane.add(lblPath);
 		
-		PathTextField = new JTextField();
-		PathTextField.setBounds(65, 77, 171, 20);
-		contentPane.add(PathTextField);
-		PathTextField.setColumns(10);
+		pathTextField = new JTextField();
+		pathTextField.setBounds(65, 77, 171, 20);
+		contentPane.add(pathTextField);
+		pathTextField.setColumns(10);
 		
 		JLabel lblUsername = new JLabel("Username");
 		lblUsername.setBounds(10, 259, 71, 14);
@@ -157,7 +158,7 @@ public class Frame extends JFrame implements ActionListener {
 		contentPane.add(btnTest);
 	}
 
-	/* 
+	/**
 	 * Gestisce gli eventi
 	 */
 	@Override
@@ -171,7 +172,8 @@ public class Frame extends JFrame implements ActionListener {
 		
 		//Quando viene premuto il bottone Test
 		if(e.getSource().equals(btnTest)){
-			testConfig();
+			checkFields();
+			//testConfig();
 		}
 	}
 	
@@ -180,10 +182,11 @@ public class Frame extends JFrame implements ActionListener {
 	 * Scrive la sezione dell'input nel file di configurazione di logstash
 	 */
 	public void scriviInput(){
+		
 		try {
 			fw = new FileWriter(fileName);
 			bw = new BufferedWriter(fw);
-			bw.write("input{\nfile{\npath => " + '"'+PathTextField.getText()+'"'+"\nstart_position => beginning\n}\n}");
+			bw.write("input{\nfile{\npath => " + '"'+pathTextField.getText()+'"'+"\nstart_position => beginning\n}\n}");
 			System.out.println("Scrittura Input Eseguita!");
 			bw.close();
 			fw.close();
@@ -208,13 +211,12 @@ public class Frame extends JFrame implements ActionListener {
 			//Crea la string con tutti i campi formattata per essere scritta come "campo1","campo2", ecc
 			for(String element : campi){
 				app = app + ',' + '"' + campi.get(j) + '"';
-				System.out.println(app);
 				j++;
 				
 			}
 			
-			String output = "\nfilter{\ncsv{\ncolumns => [" + app + "]\n separator => "+'"'+separatoreTextField.getText()+'"'+"\n}\n}";
-			bw.append(output);
+			String filter = "\nfilter{\ncsv{\ncolumns => [" + app + "]\n separator => "+'"'+separatoreTextField.getText()+'"'+"\n}\n}";
+			bw.append(filter);
 			System.out.println("Scrittura Filter Eseguita!");
 			bw.close();
 			fw.close();
@@ -253,7 +255,7 @@ public class Frame extends JFrame implements ActionListener {
 	public ArrayList<String> splitColumns(){
 		
 		String[] columns = campiTextField.getText().split("\\,");
-		ArrayList<String> campiString = new ArrayList();
+		ArrayList<String> campiString = new ArrayList<String>();
 		int i = 0;
 		for(String item : columns){
 			campiString.add(columns[i]);
@@ -262,6 +264,9 @@ public class Frame extends JFrame implements ActionListener {
 		return campiString;
 	}
 	
+	/**
+	 * Lancia logstash per testare la configurazione
+	 */
 	public void testConfig(){
 		Runtime rt = Runtime.getRuntime();
 		try {
@@ -272,32 +277,23 @@ public class Frame extends JFrame implements ActionListener {
 		
 	}
 	
-	
-   
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
+	/**
+	 * Controlla che tutti i campi siano inseriti prima di generare la configurazione
+	 */
+	public void checkFields(){
+		
+		String path = pathTextField.getText();
+		String campi = campiTextField.getText();
+		String host = hostTextField.getText();
+		String separatore = separatoreTextField.getText();
+		String userName= userNameTextField.getText();
+		String password= passwordTextField.getText();
+		//File Perk
+		
+		if(path.equals("") || campi.equals("") || host.equals("")  || separatore.equals("") || userName.equals("") || password.equals("")){
+			JOptionPane.showMessageDialog(this,"Inserisci tutti i campi!");
+		}
+	}
 	
 	
 	
