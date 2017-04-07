@@ -147,12 +147,12 @@ public class Frame extends JFrame implements ActionListener {
 		separatoreTextField.setColumns(10);
 		
 		btnCarica = new JButton("Genera Configurazione");
-		btnCarica.setBounds(365, 222, 155, 33);
+		btnCarica.setBounds(365, 222, 181, 33);
 		btnCarica.addActionListener(this);
 		contentPane.add(btnCarica);
 		
 		btnTest = new JButton("Test");
-		btnTest.setBounds(365, 275, 155, 33);
+		btnTest.setBounds(365, 275, 181, 33);
 		btnTest.addActionListener(this);
 		contentPane.add(btnTest);
 	}
@@ -234,7 +234,7 @@ public class Frame extends JFrame implements ActionListener {
 			fw = new FileWriter(fileName, true);//Append mode
 			bw = new BufferedWriter(fw);
 			
-			String output = "\noutput{\nfile{\nelasticsearch{\nindex =>"+'"'+'"'+"\nhosts =>"+'"'+"["+hostTextField.getText()+"]"+'"'+"\nuser => "+'"'+userNameTextField.getText()+'"' + 
+			String output = "\noutput{\nelasticsearch{\nindex =>"+'"'+'"'+"\nhosts =>"+'"'+"["+hostTextField.getText()+"]"+'"'+"\nuser => "+'"'+userNameTextField.getText()+'"' + 
 					"\npassword => " + '"'+passwordTextField.getText()+'"' + "\n} stdout{}\n}";
 			
 			bw.append(output);
@@ -265,7 +265,7 @@ public class Frame extends JFrame implements ActionListener {
 	public void testConfig(){
 		Runtime rt = Runtime.getRuntime();
 		try {
-			rt.exec("cmd.exe /c start");
+			rt.exec("cmd.exe /c start logstash -f prova_config.conf -t");
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
