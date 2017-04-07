@@ -25,6 +25,8 @@ import javax.swing.JTextField;
 import java.awt.Component;
 import javax.swing.Box;
 import javax.swing.JButton;
+import javax.swing.JFileChooser;
+import javax.swing.JPasswordField;
 
 /**
  *
@@ -44,44 +46,23 @@ public class Frame extends JFrame implements ActionListener {
 	private JTextField hostTextField;
 	private JTextField pathTextField;
 	private JTextField userNameTextField;
-	private JTextField passwordTextField;
 	private JTextField separatoreTextField;
+	private JPasswordField passwordTextField;
+	private JTextField indexTextField;
 	//Bottoni
 	private JButton btnCarica;
 	private JButton btnTest;
-
-	/**
-	 * Launch the application.
-	 */
-	public static void main(String[] args) {
-		EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					Frame frame = new Frame();
-					frame.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
-	}
+	private JButton btnScegli;	
 
 	/**
 	 * Create the frame.
 	 */
 	public Frame() {
+		
 		setTitle("Logstash Client");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setBounds(100, 100, 698, 482);
-		
-		JMenuBar menuBar = new JMenuBar();
-		setJMenuBar(menuBar);
-		
-		JMenu mnNewMenu = new JMenu("File");
-		menuBar.add(mnNewMenu);
-		
-		JMenuItem mntmCarica = new JMenuItem("Carica");
-		mnNewMenu.add(mntmCarica);
+		setResizable(false);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		setContentPane(contentPane);
@@ -107,7 +88,7 @@ public class Frame extends JFrame implements ActionListener {
 		contentPane.add(lblHost);
 		
 		hostTextField = new JTextField();
-		hostTextField.setBounds(65, 146, 86, 20);
+		hostTextField.setBounds(65, 146, 120, 20);
 		contentPane.add(hostTextField);
 		hostTextField.setColumns(10);
 		
@@ -116,7 +97,7 @@ public class Frame extends JFrame implements ActionListener {
 		contentPane.add(lblPath);
 		
 		pathTextField = new JTextField();
-		pathTextField.setBounds(65, 77, 171, 20);
+		pathTextField.setBounds(65, 77, 345, 20);
 		contentPane.add(pathTextField);
 		pathTextField.setColumns(10);
 		
@@ -132,11 +113,6 @@ public class Frame extends JFrame implements ActionListener {
 		userNameTextField.setBounds(86, 255, 86, 20);
 		contentPane.add(userNameTextField);
 		userNameTextField.setColumns(10);
-		
-		passwordTextField = new JTextField();
-		passwordTextField.setBounds(86, 281, 86, 20);
-		contentPane.add(passwordTextField);
-		passwordTextField.setColumns(10);
 		
 		JLabel lblSeparatore = new JLabel("Separatore");
 		lblSeparatore.setBounds(439, 114, 71, 14);
@@ -156,6 +132,24 @@ public class Frame extends JFrame implements ActionListener {
 		btnTest.setBounds(365, 275, 181, 33);
 		btnTest.addActionListener(this);
 		contentPane.add(btnTest);
+		
+		passwordTextField = new JPasswordField();
+		passwordTextField.setBounds(86, 281, 86, 20);
+		contentPane.add(passwordTextField);
+		
+		JLabel lblIndex = new JLabel("Index");
+		lblIndex.setBounds(200, 149, 52, 14);
+		contentPane.add(lblIndex);
+		
+		indexTextField = new JTextField();
+		indexTextField.setBounds(245, 146, 120, 20);
+		contentPane.add(indexTextField);
+		indexTextField.setColumns(10);
+		
+	    btnScegli = new JButton("...");
+		btnScegli.setBounds(439, 76, 71, 20);
+		btnScegli.addActionListener(this);
+		contentPane.add(btnScegli);
 	}
 
 	/**
@@ -163,17 +157,24 @@ public class Frame extends JFrame implements ActionListener {
 	 */
 	@Override
 	public void actionPerformed(ActionEvent e) {
+		
 		//Quando viene premuto il bottone Crea Configurazione
 		if(e.getSource().equals(btnCarica)){
-			scriviInput();
-			scriviFilter();
-			scriviOutput();
+			if(checkFields()){//Controlla se tutti i campi sono stati riempiti
+				scriviInput();
+				scriviFilter();
+				scriviOutput();
+				JOptionPane.showMessageDialog(this,"Configurazione creata con successo!");
+			}
 		}
 		
 		//Quando viene premuto il bottone Test
 		if(e.getSource().equals(btnTest)){
-			checkFields();
-			//testConfig();
+			testConfig();
+		}
+		//Apre la finestra per la scelta del file
+		if(e.getSource().equals(btnScegli)){
+			sfoglia();
 		}
 	}
 	
@@ -211,8 +212,7 @@ public class Frame extends JFrame implements ActionListener {
 			//Crea la string con tutti i campi formattata per essere scritta come "campo1","campo2", ecc
 			for(String element : campi){
 				app = app + ',' + '"' + campi.get(j) + '"';
-				j++;
-				
+				j++;	
 			}
 			
 			String filter = "\nfilter{\ncsv{\ncolumns => [" + app + "]\n separator => "+'"'+separatoreTextField.getText()+'"'+"\n}\n}";
@@ -220,6 +220,7 @@ public class Frame extends JFrame implements ActionListener {
 			System.out.println("Scrittura Filter Eseguita!");
 			bw.close();
 			fw.close();
+			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -236,13 +237,14 @@ public class Frame extends JFrame implements ActionListener {
 			fw = new FileWriter(fileName, true);//Append mode
 			bw = new BufferedWriter(fw);
 			
-			String output = "\noutput{\nelasticsearch{\nindex =>"+'"'+'"'+"\nhosts =>"+'"'+"["+hostTextField.getText()+"]"+'"'+"\nuser => "+'"'+userNameTextField.getText()+'"' + 
-					"\npassword => " + '"'+passwordTextField.getText()+'"' + "\n} stdout{}\n}";
+			String output = "\noutput{\nelasticsearch{\nindex =>"+'"'+indexTextField.getText()+'"'+"\nhosts =>"+'"'+"["+hostTextField.getText()+"]"+'"'+"\nuser => "+'"'+userNameTextField.getText()+'"' + 
+					"\npassword => " + '"'+passwordTextField.getSelectedText()+'"' + "\n} stdout{}\n}";
 			
 			bw.append(output);
 			System.out.println("Scrittura Output Eseguita!");
 			bw.close();
 			fw.close();
+			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -268,9 +270,11 @@ public class Frame extends JFrame implements ActionListener {
 	 * Lancia logstash per testare la configurazione
 	 */
 	public void testConfig(){
+		
 		Runtime rt = Runtime.getRuntime();
 		try {
-			rt.exec("cmd.exe /c start logstash -f prova_config.conf -t");
+			rt.exec("cmd.exe /c start logstash.bat -f prova_config.conf -t");
+			
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -280,23 +284,36 @@ public class Frame extends JFrame implements ActionListener {
 	/**
 	 * Controlla che tutti i campi siano inseriti prima di generare la configurazione
 	 */
-	public void checkFields(){
+	public boolean checkFields(){
 		
 		String path = pathTextField.getText();
 		String campi = campiTextField.getText();
 		String host = hostTextField.getText();
 		String separatore = separatoreTextField.getText();
-		String userName= userNameTextField.getText();
-		String password= passwordTextField.getText();
-		//File Perk
+		String userName = userNameTextField.getText();
+		String password = passwordTextField.getText();
 		
+		//Se tutti i campi sono stati inseriti ritorna true
 		if(path.equals("") || campi.equals("") || host.equals("")  || separatore.equals("") || userName.equals("") || password.equals("")){
-			JOptionPane.showMessageDialog(this,"Inserisci tutti i campi!");
+			JOptionPane.showMessageDialog(this, "Inserisci tutti i campi!");
+			return false;
+		}
+		else{
+			return true;
 		}
 	}
 	
-	
-	
-	
+	/**
+	 * Apre la finestra per scegliere il il file da caricare
+	 */
+	public void sfoglia(){
+		
+		JFileChooser fc = new JFileChooser ();
+		int response = fc.showOpenDialog(null);
 
+		if(response == JFileChooser.APPROVE_OPTION){
+		   String stringa = fc.getSelectedFile().getPath();
+		   pathTextField.setText(stringa);
+		}
+	}
 }//Classe
