@@ -11,6 +11,10 @@ import java.io.IOException;
  */
 public class LogstashProgram {
 	
+	/**
+	 * Start the application
+	 * @param args
+	 */
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {

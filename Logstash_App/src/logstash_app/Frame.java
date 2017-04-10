@@ -36,10 +36,9 @@ import javax.swing.JPasswordField;
  */
 public class Frame extends JFrame implements ActionListener {
 	
-	
 	private BufferedWriter bw;
 	private FileWriter fw;
-	private String fileName = "prova_config.conf";
+	private String fileName = "";
 	
 	private JPanel contentPane;
 	private JTextField campiTextField;
@@ -49,10 +48,13 @@ public class Frame extends JFrame implements ActionListener {
 	private JTextField separatoreTextField;
 	private JPasswordField passwordTextField;
 	private JTextField indexTextField;
+	private JTextField fileNameTextField;
 	//Bottoni
 	private JButton btnCarica;
 	private JButton btnTest;
 	private JButton btnScegli;	
+	
+	private boolean isConfigCreated = false;
 
 	/**
 	 * Create the frame.
@@ -165,9 +167,9 @@ public class Frame extends JFrame implements ActionListener {
 				scriviFilter();
 				scriviOutput();
 				JOptionPane.showMessageDialog(this,"Configurazione creata con successo!");
+				isConfigCreated = true;
 			}
 		}
-		
 		//Quando viene premuto il bottone Test
 		if(e.getSource().equals(btnTest)){
 			testConfig();
@@ -237,8 +239,11 @@ public class Frame extends JFrame implements ActionListener {
 			fw = new FileWriter(fileName, true);//Append mode
 			bw = new BufferedWriter(fw);
 			
+			char[] pass = passwordTextField.getPassword();
+			String password = new String(pass);
+			
 			String output = "\noutput{\nelasticsearch{\nindex =>"+'"'+indexTextField.getText()+'"'+"\nhosts =>"+'"'+"["+hostTextField.getText()+"]"+'"'+"\nuser => "+'"'+userNameTextField.getText()+'"' + 
-					"\npassword => " + '"'+passwordTextField.getSelectedText()+'"' + "\n} stdout{}\n}";
+					"\npassword => " + '"'+password+'"' + "\n} stdout{}\n}";
 			
 			bw.append(output);
 			System.out.println("Scrittura Output Eseguita!");
@@ -251,8 +256,8 @@ public class Frame extends JFrame implements ActionListener {
 	}
 	
 	/**
-	 * Divide i campi inseriti nel JTextField campi
-	 * @return comulms 
+	 * Divide i campi di campiJTextField e li inserisce in un arraylist
+	 * @return comulms - arraylist contenete i campi     
 	 */
 	public ArrayList<String> splitColumns(){
 		
@@ -267,18 +272,22 @@ public class Frame extends JFrame implements ActionListener {
 	}
 	
 	/**
-	 * Lancia logstash per testare la configurazione
+	 * Esegue logstash per testare la configurazione
 	 */
 	public void testConfig(){
 		
-		Runtime rt = Runtime.getRuntime();
-		try {
-			rt.exec("cmd.exe /c start logstash.bat -f prova_config.conf -t");
+		if(isConfigCreated){//Se la configurazione è già stata creata
+			Runtime rt = Runtime.getRuntime();
+			try {
+				rt.exec("cmd.exe /c start logstash.bat -f " + fileName + "-t");
 			
-		} catch (IOException e) {
-			e.printStackTrace();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
-		
+		else{
+			JOptionPane.showMessageDialog(this, "Devi prima creare la configurazione");
+		}
 	}
 	
 	/**
@@ -291,7 +300,8 @@ public class Frame extends JFrame implements ActionListener {
 		String host = hostTextField.getText();
 		String separatore = separatoreTextField.getText();
 		String userName = userNameTextField.getText();
-		String password = passwordTextField.getText();
+		char[] password = passwordTextField.getPassword();
+
 		
 		//Se tutti i campi sono stati inseriti ritorna true
 		if(path.equals("") || campi.equals("") || host.equals("")  || separatore.equals("") || userName.equals("") || password.equals("")){
@@ -315,5 +325,20 @@ public class Frame extends JFrame implements ActionListener {
 		   String stringa = fc.getSelectedFile().getPath();
 		   pathTextField.setText(stringa);
 		}
+	}
+	
+	/**
+	 * Esegue logstash per caricare i dati											
+	 */
+	public void carica(){
+		
+		Runtime rt = Runtime.getRuntime();
+		try {
+			rt.exec("cmd.exe /c start logstash.bat -f " + fileName +  "-r");
+		
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
 	}
 }//Classe
