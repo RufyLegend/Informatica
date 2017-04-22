@@ -1,19 +1,14 @@
 package logstash_app;
 
-import java.awt.BorderLayout;
-import java.awt.EventQueue;
-
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
-import javax.swing.JToolBar;
-import javax.swing.JMenuBar;
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
+
 import javax.swing.JOptionPane;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 import java.awt.Font;
+
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedWriter;
@@ -22,8 +17,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import javax.swing.JTextField;
-import java.awt.Component;
-import javax.swing.Box;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JPasswordField;
@@ -53,6 +46,7 @@ public class Frame extends JFrame implements ActionListener {
 	private JButton btnCarica;
 	private JButton btnTest;
 	private JButton btnScegli;	
+	private JButton btnCreateConf;
 	
 	private boolean isConfigCreated = false;
 
@@ -125,10 +119,10 @@ public class Frame extends JFrame implements ActionListener {
 		contentPane.add(separatoreTextField);
 		separatoreTextField.setColumns(10);
 		
-		btnCarica = new JButton("Genera Configurazione");
-		btnCarica.setBounds(365, 222, 181, 33);
-		btnCarica.addActionListener(this);
-		contentPane.add(btnCarica);
+		btnCreateConf = new JButton("Genera Configurazione");
+		btnCreateConf.setBounds(365, 222, 181, 33);
+		btnCreateConf.addActionListener(this);
+		contentPane.add(btnCreateConf);
 		
 		btnTest = new JButton("Test");
 		btnTest.setBounds(365, 275, 181, 33);
@@ -152,6 +146,20 @@ public class Frame extends JFrame implements ActionListener {
 		btnScegli.setBounds(439, 76, 71, 20);
 		btnScegli.addActionListener(this);
 		contentPane.add(btnScegli);
+		
+		fileNameTextField = new JTextField();
+		fileNameTextField.setBounds(503, 146, 146, 20);
+		contentPane.add(fileNameTextField);
+		fileNameTextField.setColumns(10);
+		
+		JLabel lblFileConfiggurazione = new JLabel("Nome configurazione");
+		lblFileConfiggurazione.setBounds(375, 149, 135, 14);
+		contentPane.add(lblFileConfiggurazione);
+		
+	    btnCarica = new JButton("Carica");
+		btnCarica.setBounds(365, 327, 181, 33);
+		btnCarica.addActionListener(this);
+		contentPane.add(btnCarica);
 	}
 
 	/**
@@ -161,8 +169,9 @@ public class Frame extends JFrame implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 		
 		//Quando viene premuto il bottone Crea Configurazione
-		if(e.getSource().equals(btnCarica)){
+		if(e.getSource().equals(btnCreateConf)){
 			if(checkFields()){//Controlla se tutti i campi sono stati riempiti
+				fileName = fileNameTextField.getText();
 				scriviInput();
 				scriviFilter();
 				scriviOutput();
@@ -177,6 +186,10 @@ public class Frame extends JFrame implements ActionListener {
 		//Apre la finestra per la scelta del file
 		if(e.getSource().equals(btnScegli)){
 			sfoglia();
+		}
+		//Bottone carica
+		if(e.getSource().equals(btnCarica)){
+			carica();
 		}
 	}
 	
@@ -292,6 +305,7 @@ public class Frame extends JFrame implements ActionListener {
 	
 	/**
 	 * Controlla che tutti i campi siano inseriti prima di generare la configurazione
+	 * @return boolean 
 	 */
 	public boolean checkFields(){
 		
@@ -300,11 +314,12 @@ public class Frame extends JFrame implements ActionListener {
 		String host = hostTextField.getText();
 		String separatore = separatoreTextField.getText();
 		String userName = userNameTextField.getText();
+		String fileName = fileNameTextField.getText();
 		char[] password = passwordTextField.getPassword();
 
 		
 		//Se tutti i campi sono stati inseriti ritorna true
-		if(path.equals("") || campi.equals("") || host.equals("")  || separatore.equals("") || userName.equals("") || password.equals("")){
+		if(path.equals("") || campi.equals("") || host.equals("")  || separatore.equals("") || userName.equals("") || password.equals("") || fileName.equals("")){
 			JOptionPane.showMessageDialog(this, "Inserisci tutti i campi!");
 			return false;
 		}
@@ -332,13 +347,17 @@ public class Frame extends JFrame implements ActionListener {
 	 */
 	public void carica(){
 		
-		Runtime rt = Runtime.getRuntime();
-		try {
-			rt.exec("cmd.exe /c start logstash.bat -f " + fileName +  "-r");
-		
-		} catch (IOException e) {
-			e.printStackTrace();
+		if(isConfigCreated){
+			Runtime rt = Runtime.getRuntime();
+			try {
+				rt.exec("cmd.exe /c start logstash.bat -f " + fileName +  "-r");
+			
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
 		}
-		
+		else{
+			JOptionPane.showMessageDialog(this, "Devi prima creare la configurazione");
+		}			
 	}
 }//Classe
