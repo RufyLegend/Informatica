@@ -12,6 +12,7 @@
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
 </head>
 
+<!-- Nav Bar -->
 <nav class="navbar navbar-default">
   <div class="container-fluid">
     <div class="navbar-header">
@@ -20,39 +21,33 @@
     <ul class="nav navbar-nav">
       <li><a href="inserisciFilm.php">Inserisci Film</a></li>
       <li><a href="inserisciGenere.php">Inserisci Genere</a></li>
-      <li><a href="visualizzaGenere.php">Generi</a></li><li>
-      <li class="active"><a href="visualizzaFilm.php">Film</a></li>
+      <li class="active"><a href="visualizzaGenere.php">Generi</a></li><li>
+      <li><a href="visualizzaFilm.php">Film</a></li>
     </ul>
   </div>
 </nav>
 
 <body>
 <div class="container">
-  <h2>Lista dei Film</h2>
+  <h2>Lista dei generi</h2>
   <table class="table">
     <thead>
       <tr>
-        <th>Titolo</th>
-        <th>Anno</th>
-        <th>Nazionalita'</th>
-        <th>Lingua</th>
-        <th>Regista</th>
-        <th>Genere</th>
+        <th>Generi:</th>
       </tr>
     </thead>
     <tbody>
     	<?php
             include 'connection.php';
-            $sql = "SELECT titolo, annoProduzione, nazionalita, lingua, regista, genere FROM films as f, generi as g WHERE f.idGenere = g.id;";
+            $sql = "SELECT genere FROM generi;";
             $result = $connessione->query($sql);
 
             if ($result->num_rows > 0) {
                 // output data of each row
                 while($row = $result->fetch_assoc()) {
-            
+           
                     echo "<tr>" ;//open tr
-                    echo "<td>" .$row["titolo"]. "</td>" . "<td>" .$row["annoProduzione"]. "</td>" ."<td>" .$row["nazionalita"]. "</td>" ."<td>" .$row["lingua"]. "</td>" ."<td>" .$row["regista"]. "</td>" ."<td>" 
-    					.$row["genere"]. "</td>";
+                    echo "<td>" .$row["genere"]. "</td>";
                     echo "</tr>";//close tr
                 }
             } else {
