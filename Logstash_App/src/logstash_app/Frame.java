@@ -6,6 +6,9 @@ import javax.swing.border.EmptyBorder;
 
 import javax.swing.JOptionPane;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.SwingConstants;
 import java.awt.Font;
 
@@ -42,6 +45,10 @@ public class Frame extends JFrame implements ActionListener {
 	private JPasswordField passwordTextField;
 	private JTextField indexTextField;
 	private JTextField fileNameTextField;
+	private JMenuBar menuBar;
+	private JMenu file;
+	private JMenuItem upload, test;
+	
 	//Bottoni
 	private JButton btnCarica;
 	private JButton btnTest;
@@ -160,6 +167,27 @@ public class Frame extends JFrame implements ActionListener {
 		btnCarica.setBounds(365, 327, 181, 33);
 		btnCarica.addActionListener(this);
 		contentPane.add(btnCarica);
+		
+		//Create the menu bar.
+		menuBar = new JMenuBar();
+
+		//Build the first menu.
+		file = new JMenu("File");
+		menuBar.add(file);
+		
+		//a group of JMenuItems
+		upload = new JMenuItem("Carica .conf");
+		upload.addActionListener(this);
+		file.add(upload);
+		menuBar.setVisible(true);
+		
+		test = new JMenuItem("Test .conf");
+		test.addActionListener(this);
+		file.add(test);
+		menuBar.setVisible(true);
+		
+		setJMenuBar(menuBar);
+		
 	}
 
 	/**
@@ -190,6 +218,15 @@ public class Frame extends JFrame implements ActionListener {
 		//Bottone carica
 		if(e.getSource().equals(btnCarica)){
 			carica();
+		}
+		//JMenu bar carica
+		if(e.getSource().equals(upload)){
+			sfogliaConf(e.getSource());
+		}
+		
+		//JMenu bar test
+		if(e.getSource().equals(test)){
+			sfogliaConf(e.getSource());
 		}
 	}
 	
@@ -255,8 +292,13 @@ public class Frame extends JFrame implements ActionListener {
 			char[] pass = passwordTextField.getPassword();
 			String password = new String(pass);
 			
-			String output = "\noutput{\nelasticsearch{\nindex =>"+'"'+indexTextField.getText()+'"'+"\nhosts =>"+'"'+"["+hostTextField.getText()+"]"+'"'+"\nuser => "+'"'+userNameTextField.getText()+'"' + 
-					"\npassword => " + '"'+password+'"' + "\n} stdout{}\n}";
+			String output = "\noutput{\nelasticsearch{\nindex =>"+'"'+indexTextField.getText()+'"'+"\nhosts =>"+
+					'"'+"["+hostTextField.getText()+ ":9200" + "]"+'"';
+			
+			if(!userNameTextField.getText().equals("") || !password.toString().equals("")){
+				output = output + "\nusername => " + userNameTextField.getText()+ '"' + "\npassword => " + '"'+password+'"'
+						+  "\n} stdout{}\n}";
+			}
 			
 			bw.append(output);
 			System.out.println("Scrittura Output Eseguita!");
@@ -313,13 +355,11 @@ public class Frame extends JFrame implements ActionListener {
 		String campi = campiTextField.getText();
 		String host = hostTextField.getText();
 		String separatore = separatoreTextField.getText();
-		String userName = userNameTextField.getText();
 		String fileName = fileNameTextField.getText();
-		char[] password = passwordTextField.getPassword();
 
 		
 		//Se tutti i campi sono stati inseriti ritorna true
-		if(path.equals("") || campi.equals("") || host.equals("")  || separatore.equals("") || userName.equals("") || password.equals("") || fileName.equals("")){
+		if(path.equals("") || campi.equals("") || host.equals("")  || separatore.equals("") || fileName.equals("")){
 			JOptionPane.showMessageDialog(this, "Inserisci tutti i campi!");
 			return false;
 		}
@@ -343,6 +383,29 @@ public class Frame extends JFrame implements ActionListener {
 	}
 	
 	/**
+	 * Apre la finestra per scegliere la configurazione
+	 */
+	public void sfogliaConf(Object operazione){
+		
+		JFileChooser fc = new JFileChooser ();
+		int response = fc.showOpenDialog(null);
+
+		if(response == JFileChooser.APPROVE_OPTION){
+		   String stringa = fc.getSelectedFile().getPath();
+		   fileName = stringa;
+		   
+		   isConfigCreated = true;
+		   if (operazione.equals(upload)){
+			   carica();
+		   }else{
+			   testConfig();
+		   }
+		   
+		   isConfigCreated = false;
+		}
+	}
+	
+	/**
 	 * Esegue logstash per caricare i dati											
 	 */
 	public void carica(){
@@ -360,4 +423,5 @@ public class Frame extends JFrame implements ActionListener {
 			JOptionPane.showMessageDialog(this, "Devi prima creare la configurazione");
 		}			
 	}
+	
 }//Classe
